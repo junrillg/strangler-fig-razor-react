@@ -4,9 +4,9 @@ Status: proposed. Components and behavior below describe the intended applicatio
 
 ## Feature boundary
 
-A signed-in user can create, list and update their own work items. Each item has a stable identifier, owner, title, status and concurrency version. Dashboard and personal notes remain Razor Pages responsibilities. Operations are bounded synchronous requests; there is no background job or document-upload flow.
+A requester drafts a hiring requisition with a title and reason, then submits it to a designated approver. That approver accepts or rejects the submitted request. Each requisition has a stable identifier, requester, assigned approver, status and concurrency version; state changes have an append-only audit history. Dashboard and personal notes remain Razor Pages responsibilities. Operations are bounded synchronous requests; there is no background job or document-upload flow.
 
-The original application must first work as a monolith, including work-item persistence. Extraction then moves that existing feature into an API without recreating its records. React replaces only the feature's presentation.
+The original application must first work as a monolith, including requisition persistence. Extraction then moves that existing feature into an API without recreating its records. React replaces only the feature's presentation.
 
 ## Intended topology
 
@@ -18,13 +18,13 @@ flowchart TB
     end
     subgraph Apps[Private application network]
       Legacy[Razor Pages monolith]
-      UI[Built React work-item assets]
-      API[ASP.NET Core work-item API]
+      UI[Built React requisition assets]
+      API[ASP.NET Core requisition API]
       Keys[Persistent shared data-protection keyring]
     end
     subgraph Database[One PostgreSQL database]
       Monolith[(Monolith schema)]
-      WorkItems[(Work-item schema)]
+      Requisitions[(Requisition schema)]
     end
     subgraph Inspection[Loopback management access]
       PGAdmin[pgAdmin]
@@ -32,27 +32,27 @@ flowchart TB
     end
     Browser -->|1. Page or API request| Gateway
     Gateway -->|Unmigrated routes| Legacy
-    Gateway -->|Work-item page| UI
-    Gateway -->|Work-item API routes| API
-    Legacy -->|After extraction: work-item adapter| API
+    Gateway -->|Requisition page| UI
+    Gateway -->|Requisition API routes| API
+    Legacy -->|After extraction: requisition adapter| API
     Legacy --- Keys
     API --- Keys
     Legacy --> Monolith
-    API --> WorkItems
+    API --> Requisitions
     PGAdmin -. Inspection .-> Database
     Gateway -. Correlated telemetry .-> Logs
     Legacy -. Correlated telemetry .-> Logs
     API -. Correlated telemetry .-> Logs
 ```
 
-The final work-item page can be routed to React or to the Razor adapter. Both use the same API after extraction. Application listeners and the database remain private to the runtime network; the gateway is the business entry point. Inspection traffic is separate from business traffic.
+The final requisition page can be routed to React or to the Razor adapter. Both use the same API after extraction. Application listeners and the database remain private to the runtime network; the gateway is the business entry point. Inspection traffic is separate from business traffic.
 
 | Component | Responsibility |
 | --- | --- |
 | YARP gateway | Dispatch page and API routes under one origin with explicit precedence and bounded forwarding. |
-| Razor Pages monolith | Sign-in, dashboard, notes and the retained work-item page adapter. |
-| React feature | Render work items, validate form input for usability and issue same-origin API requests. |
-| Work-item API | Authorize owners, validate requests, enforce concurrency and own feature persistence. |
+| Razor Pages monolith | Sign-in, dashboard, notes and the retained requisition page adapter. |
+| React feature | Render requisitions, validate form input for usability and issue same-origin API requests. |
+| Requisition API | Authorize owners, validate requests, enforce concurrency and own feature persistence. |
 | PostgreSQL | Persist monolith and feature records using separate schemas and runtime privileges. |
 | Shared keyring | Preserve compatible authentication ticket protection across trusted server applications and ordinary restarts. |
 | pgAdmin | Inspect schemas, permissions and synthetic database records outside the business path. |
@@ -62,23 +62,36 @@ The final work-item page can be routed to React or to the Razor adapter. Both us
 
 1. The browser requests a page through YARP. Dashboard and notes resolve to Razor Pages; the feature route resolves to its selected page implementation.
 2. The monolith handles sign-in and issues the application authentication cookie. The API validates compatible tickets using the shared protection settings; each operation still applies its own authorization.
-3. React loads the current user's bounded work-item list through the gateway. The retained Razor page uses its server-side API adapter for the equivalent operation.
+3. React loads the current user's bounded requisition list through the gateway. The retained Razor page uses its server-side API adapter for the equivalent operation.
 4. A mutation carries the authentication context, antiforgery proof, validated fields and the expected item version where applicable. Owner identity comes from the authenticated principal, never a client-selected owner field.
-5. The API validates the operation and performs a short owner-scoped database transaction. A stale version produces an explicit conflict rather than silently overwriting another edit.
+5. The API checks both the caller’s role and their relationship to the requisition. It applies an allowed state transition and appends its audit event in one short database transaction. A stale version produces a conflict rather than overwriting another edit or decision.
 6. The API returns the authorized persisted result or a safe error. The current page renders the result and announces relevant status accessibly.
-7. Correlated, allowlisted events make the gateway and application handoffs inspectable. Cookies, credentials and work-item bodies do not enter telemetry.
+7. Correlated, allowlisted events make the gateway and application handoffs inspectable. Cookies, credentials and requisition bodies do not enter telemetry.
 
 Native links move between the React feature and Razor pages with full-page navigation. This keeps each rendering system responsible for its own page lifecycle. A failed request preserves recoverable user input and offers an explicit retry; no automatic fallback writes to a legacy store.
 
+## Requisition state contract
+
+```mermaid
+stateDiagram-v2
+    [*] --> Draft: requester creates
+    Draft --> Draft: requester edits
+    Draft --> Submitted: requester submits
+    Submitted --> Approved: assigned approver accepts
+    Submitted --> Rejected: assigned approver rejects with reason
+```
+
+The requester and assigned approver can inspect their requisition and its history. The server derives actor identity and role from authentication, checks the stored assignment and expected version, then commits the new state with its audit event. Final decisions are terminal in this bounded workflow. Notes remain private to their owner in the monolith.
+
 ## Data ownership and extraction
 
-Initially the monolith owns work-item behavior and persistence. The extracted state assigns logical ownership to the API and denies the monolith runtime role direct access to feature records. Schema ownership and migration privileges belong to a controlled migration role; runtime credentials do not need schema-changing privileges.
+Initially the monolith owns requisition behavior and persistence. The extracted state assigns logical ownership to the API and denies the monolith runtime role direct access to feature records. Schema ownership and migration privileges belong to a controlled migration role; runtime credentials do not need schema-changing privileges.
 
 The intended expand-contract transition is:
 
 1. Introduce the feature API and a compatible Razor adapter without admitting a second independent writer.
 2. Establish a bounded feature-write drain and verify the active writer before changing ownership. Dashboard and notes remain separate routes.
-3. Execute the controlled schema/privilege transition with appropriate locking, preserving work-item identifiers, owners, values, timestamps, versions and constraints. Activate API access only under the intended ownership state.
+3. Execute the controlled schema/privilege transition with appropriate locking, preserving requisition identifiers, owners, values, timestamps, versions and constraints. Activate API access only under the intended ownership state.
 4. Verify the retained records through the API and confirm the former runtime writer is denied direct feature access.
 5. Use the API-backed Razor page before independently switching the public feature page to React.
 6. Retire obsolete direct feature persistence after the compatible path is established.
@@ -87,7 +100,7 @@ This is a schema-and-permission extraction within one PostgreSQL database. It is
 
 ## Security and failure behavior
 
-Both feature presentations use the same API validation, owner filtering and concurrency rules. Mutating cookie-authenticated requests require antiforgery protection. Shared authentication keys make the server applications mutually trusted; keys require restricted storage and persistent handling. The React bundle receives neither keys nor database credentials.
+Both feature presentations use the same API validation, participant authorization and concurrency rules. Requesters can change their own drafts and submit them; only the assigned approver can decide a submitted requisition. A rejection requires a reason. The server rejects decisions from other users and repeated or invalid transitions. Mutating cookie-authenticated requests require antiforgery protection. Shared authentication keys make the server applications mutually trusted; keys require restricted storage and persistent handling. The React bundle receives neither keys nor database credentials.
 
 If the API is unavailable, feature operations fail visibly without restoring the old writer. Unmigrated pages continue using their own data boundary where their dependencies remain healthy. If PostgreSQL is unavailable, the application reports a safe storage failure. A telemetry outage must not fail a business operation; buffered export and fallback output must be bounded.
 
