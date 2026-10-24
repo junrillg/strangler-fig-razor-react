@@ -1,7 +1,5 @@
 # Product
 
-<!-- impeccable:product-schema 1 -->
-
 ## Platform
 
 web
@@ -32,9 +30,9 @@ Desktop and mobile browsers. Dashboard and personal notes remain server-rendered
 - Notes stay private to their author. Normal application stop and restart preserve records.
 - No external sending, candidate assessment, file upload, compensation or calendar integration is part of this application.
 
-## Evidence on Hand
+## Local Runtime
 
-The architecture is documented in `docs/design.md`. Application implementation is in progress; no customer adoption or production deployment is claimed. Demonstration records are synthetic.
+The current Razor Pages application owns requisitions, decisions and notes. The API and React topology in `docs/design.md` describes the planned extraction. Demonstration records are synthetic; no customer adoption or production deployment is claimed.
 
 ## Product Principles
 

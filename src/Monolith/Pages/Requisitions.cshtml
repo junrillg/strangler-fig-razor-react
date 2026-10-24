@@ -1,0 +1,194 @@
+@page
+@model RequisitionsModel
+@{
+    ViewData["Title"] = "Requisitions";
+    var selected = Model.Selected;
+    var requester = User.IsInRole("requester");
+    var mayEdit = selected is not null && requester && selected.RequesterId == User.Owner() && selected.Status == "draft";
+    var mayDecide = selected is not null && User.IsInRole("approver") && selected.ApproverId == User.Owner() && selected.Status == "submitted";
+}
+<header class="page-header">
+    <div>
+        <h1>Requisitions</h1>
+        <p>@(requester ? "Prepare a draft and follow its decision." : "Review the requests assigned to you.")</p>
+    </div>
+    @if (requester && selected is not null)
+    {
+        <a class="button button-secondary" asp-page="/Requisitions">New request</a>
+    }
+</header>
+@if (Model.ErrorMessage is not null)
+{
+    <div class="error-message" role="alert" tabindex="-1" autofocus>
+        <p>@Model.ErrorMessage</p>
+        <p>Your entered text is kept below. <a asp-page="/Requisitions" asp-route-id="@(Model.Id == Guid.Empty ? (Guid?)null : Model.Id)">Reload the saved request</a> before retrying a conflict.</p>
+    </div>
+}
+<div class="review-sheet">
+    <aside class="request-queue" aria-labelledby="queue-title">
+        <header class="queue-heading"><h2 id="queue-title">Requests</h2></header>
+        @if (Model.Requisitions.Items.Count == 0)
+        {
+            <p class="queue-empty">@(requester ? "Your saved drafts and submitted requests will appear here." : "No requests are assigned to you yet.")</p>
+        }
+        else
+        {
+            <ul class="queue-list">
+                @foreach (var item in Model.Requisitions.Items)
+                {
+                    var current = selected?.Id == item.Id;
+                    <li>
+                        <a class="queue-link" asp-page="/Requisitions" asp-route-id="@item.Id" asp-fragment="request-title" aria-current="@(current ? "true" : null)">
+                            <span class="queue-title">@item.Title</span>
+                            <span class="queue-meta">
+                                <span class="status status-@item.Status">@item.Status</span>
+                                @if (current) { <span class="selection-label">Selected</span> }
+                            </span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+        @if (Model.Requisitions.NextCursor is not null)
+        {
+            <nav class="pagination" aria-label="Request pages"><a asp-page="/Requisitions" asp-route-after="@Model.Requisitions.NextCursor">Next requests</a></nav>
+        }
+    </aside>
+    <article class="review-pane" aria-labelledby="request-title">
+        @if (selected is null && requester)
+        {
+            <header class="review-header">
+                <h2 id="request-title" tabindex="-1">New requisition</h2>
+                <p>Start with the role and the reason it is needed. Saving creates an editable draft.</p>
+            </header>
+            <form method="post" asp-page="/Requisitions" asp-page-handler="Create" class="form-stack request-form">
+                <input asp-for="RequestId" type="hidden" />
+                <div class="field">
+                    <label asp-for="Title">Role title</label>
+                    <input asp-for="Title" maxlength="120" required aria-describedby="title-help" />
+                    <p id="title-help" class="field-help">Up to 120 characters.</p>
+                </div>
+                <div class="field">
+                    <label asp-for="Reason">Business reason</label>
+                    <textarea asp-for="Reason" rows="6" maxlength="1000" required aria-describedby="reason-help"></textarea>
+                    <p id="reason-help" class="field-help">Explain the need and the context for your approver. Up to 1,000 characters.</p>
+                </div>
+                <div class="form-actions"><button class="button" type="submit">Save draft</button><span class="field-help">You can review it before submitting.</span></div>
+            </form>
+        }
+        else if (selected is null)
+        {
+            <div class="review-empty">
+                <h2 id="request-title" tabindex="-1">Choose a request to review</h2>
+                <p>Open a request from the list to read its business reason, see its current state and inspect the recorded history.</p>
+                <p>Only a submitted request assigned to you can be approved or rejected.</p>
+            </div>
+        }
+        else
+        {
+            <header class="review-header">
+                <h2 id="request-title" tabindex="-1">@selected.Title</h2>
+                <div class="record-meta">
+                    <span class="status status-@selected.Status">@selected.Status</span>
+                    <span>Revision @selected.Version</span>
+                    <span>@(selected.RequesterId == User.Owner() ? "Requested by you" : "From requester")</span>
+                    <span>@(selected.ApproverId == User.Owner() ? "Assigned to you" : "Assigned to approver")</span>
+                </div>
+            </header>
+            @if (mayEdit)
+            {
+                <form id="draft-edit" method="post" asp-page="/Requisitions" asp-page-handler="Update" class="form-stack request-form">
+                    <input asp-for="Id" type="hidden" id="edit-id" />
+                    <input asp-for="Version" type="hidden" id="edit-version" />
+                    <div class="field">
+                        <label asp-for="Title">Role title</label>
+                        <input asp-for="Title" maxlength="120" required />
+                    </div>
+                    <div class="field">
+                        <label asp-for="Reason">Business reason</label>
+                        <textarea asp-for="Reason" rows="5" maxlength="1000" required aria-describedby="draft-help"></textarea>
+                        <p id="draft-help" class="field-help">Up to 1,000 characters. Save changes before submitting.</p>
+                    </div>
+                    <div><button class="button button-secondary" type="submit">Save changes</button></div>
+                </form>
+                <section class="action-section" aria-labelledby="submit-title">
+                    <div><h3 id="submit-title">Ready for review?</h3><p>Submission locks the draft and sends it to its assigned approver.</p></div>
+                    <button class="button" type="submit" form="draft-edit" asp-page="/Requisitions" asp-page-handler="Submit">Submit for review</button>
+                </section>
+            }
+            else
+            {
+                <section class="request-context" aria-labelledby="reason-title">
+                    <h3 id="reason-title">Business reason</h3>
+                    <p class="preserve-lines">@selected.Reason</p>
+                </section>
+                @if (mayDecide)
+                {
+                    <section class="decision-section" aria-labelledby="decision-title">
+                        <h3 id="decision-title">Record your decision</h3>
+                        <form method="post" asp-page="/Requisitions" asp-page-handler="Decide" class="form-stack">
+                            <input asp-for="Id" type="hidden" id="decision-id" />
+                            <input asp-for="Version" type="hidden" id="decision-version" />
+                            <fieldset class="decision-options">
+                                <legend>Decision</legend>
+                                <label for="decision-approved"><input asp-for="Decision" type="radio" id="decision-approved" value="approved" required />Approve</label>
+                                <label for="decision-rejected"><input asp-for="Decision" type="radio" id="decision-rejected" value="rejected" required />Reject</label>
+                            </fieldset>
+                            <div class="field">
+                                <label asp-for="DecisionReason">Decision reason</label>
+                                <textarea asp-for="DecisionReason" rows="3" maxlength="1000" aria-describedby="decision-help"></textarea>
+                                <p id="decision-help" class="field-help">Required when rejecting. Up to 1,000 characters.</p>
+                            </div>
+                            <div><button class="button" type="submit">Record decision</button></div>
+                        </form>
+                    </section>
+                }
+                else if (selected.Status == "submitted")
+                {
+                    <section class="state-message"><h3>Awaiting a decision</h3><p>The assigned approver can now approve or reject this request.</p></section>
+                }
+                else if (selected.Status == "draft")
+                {
+                    <section class="state-message"><h3>Draft with requester</h3><p>The requester can edit and submit this draft. Your review starts after submission.</p></section>
+                }
+                else
+                {
+                    <section class="state-message"><h3>Decision recorded</h3><p>This request is read-only. The decision and any reason appear in its history below.</p></section>
+                }
+            }
+            @if (Model.ErrorMessage is not null && !mayEdit && (!string.IsNullOrEmpty(Model.Title) || !string.IsNullOrEmpty(Model.Reason)))
+            {
+                <section class="recovered-input" aria-labelledby="unsaved-title">
+                    <h3 id="unsaved-title">Your unsaved changes</h3>
+                    <p>The saved request is no longer editable. You can copy your entered text before reloading.</p>
+                    <div class="field"><label for="unsaved-role">Role title</label><input id="unsaved-role" value="@Model.Title" readonly /></div>
+                    <div class="field"><label for="unsaved-reason">Business reason</label><textarea id="unsaved-reason" rows="4" readonly>@Model.Reason</textarea></div>
+                </section>
+            }
+            @if (Model.ErrorMessage is not null && !mayDecide && (!string.IsNullOrEmpty(Model.DecisionReason) || !string.IsNullOrEmpty(Model.Decision)))
+            {
+                <section class="recovered-input" aria-labelledby="unsaved-decision">
+                    <h3 id="unsaved-decision">Your unrecorded decision</h3>
+                    <p>This request can no longer take that decision. Your entered reason is preserved here.</p>
+                    <div class="field"><label for="unsaved-choice">Decision</label><input id="unsaved-choice" value="@Model.Decision" readonly /></div>
+                    <div class="field"><label for="unsaved-decision-reason">Decision reason</label><textarea id="unsaved-decision-reason" rows="3" readonly>@Model.DecisionReason</textarea></div>
+                </section>
+            }
+            <section class="history-section" aria-labelledby="history-title">
+                <h3 id="history-title">Recorded history</h3>
+                <ol class="audit-list">
+                    @foreach (var entry in Model.Audit)
+                    {
+                        var actor = entry.ActorId == selected.RequesterId ? "Requester" : entry.ActorId == selected.ApproverId ? "Approver" : "Participant";
+                        var action = entry.ToStatus switch { "draft" => "Draft created", "submitted" => "Submitted for review", "approved" => "Approved", "rejected" => "Rejected", _ => entry.ToStatus };
+                        <li>
+                            <div class="audit-event"><strong>@action</strong><span>@actor</span></div>
+                            <time datetime="@entry.OccurredAt.ToString("O")">@entry.OccurredAt.ToString("dd MMM yyyy, HH:mm") UTC</time>
+                            @if (entry.Reason is not null) { <p class="audit-reason preserve-lines">@entry.Reason</p> }
+                        </li>
+                    }
+                </ol>
+            </section>
+        }
+    </article>
+</div>

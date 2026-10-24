@@ -1,0 +1,16 @@
+.git
+.secrets
+.local
+.dotnet
+.impeccable
+**/bin
+**/obj
+**/node_modules
+**/TestResults
+**/coverage
+**/dist
+*.pfx
+*.p12
+*.key
+.env
+.env.*

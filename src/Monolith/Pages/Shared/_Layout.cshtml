@@ -1,0 +1,50 @@
+@{
+    var page = ViewContext.RouteData.Values["page"]?.ToString();
+    var signedIn = User.Identity?.IsAuthenticated == true;
+    var role = User.IsInRole("approver") ? "Approver" : "Requester";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>@ViewData["Title"] · Requisition desk</title>
+    <link rel="preload" href="/assets/SourceSans3VF-Upright.ttf.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/assets/site.css" />
+</head>
+<body>
+<!-- Review sheet: slate ground, ink navigation, petrol actions and a white reading plane.
+Choose a request in the compact queue, inspect its context, take the permitted action,
+and read its ruled history. Native navigation, semantic forms and mobile stacking preserve the flow. -->
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="app-shell">
+        <aside class="nav-rail" aria-label="Workspace navigation">
+            <a class="brand" asp-page="/Index">Requisition<br /> desk<span class="brand-rule" aria-hidden="true"></span></a>
+            @if (signedIn)
+            {
+                <nav class="primary-nav" aria-label="Main">
+                    <a asp-page="/Index" aria-current="@(page == "/Index" ? "page" : null)">Overview</a>
+                    <a asp-page="/Requisitions" aria-current="@(page == "/Requisitions" ? "page" : null)">Requisitions</a>
+                    <a asp-page="/Notes" aria-current="@(page == "/Notes" ? "page" : null)">Private notes</a>
+                </nav>
+                <div class="rail-account">
+                    <p class="account-name">@User.Identity?.Name</p>
+                    <p class="account-role">@role</p>
+                    <form method="post" asp-page="/Logout">
+                        <button class="rail-signout" type="submit">Sign out</button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <p class="rail-purpose">A clear record of each request and its decision.</p>
+                <p class="rail-demo">Synthetic workspace</p>
+            }
+        </aside>
+        <main id="main-content" class="main-content @(signedIn ? "" : "signed-out")" tabindex="-1">
+            @RenderBody()
+        </main>
+    </div>
+</body>
+</html>

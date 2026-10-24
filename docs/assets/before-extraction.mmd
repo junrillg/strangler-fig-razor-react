@@ -1,0 +1,10 @@
+flowchart TB
+    B[Browser] -->|1 Page or API request| G[2 YARP gateway]
+    G -->|Route| M[3 Razor Pages monolith<br/>Requisitions, dashboard and notes]
+    M -->|4 Authorized SQL| D[(PostgreSQL<br/>monolith schema)]
+    D -. Result .-> M
+    M -. HTML or JSON .-> G
+    G -. Response .-> B
+    G -. Direct telemetry .-> L[OpenObserve<br/>Searchable logs]
+    M -. Direct telemetry .-> L
+    V[pgAdmin] -. Inspection .-> D

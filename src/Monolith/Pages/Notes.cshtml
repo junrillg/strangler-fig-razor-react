@@ -1,0 +1,52 @@
+@page
+@model NotesModel
+@{
+    ViewData["Title"] = "Private notes";
+}
+<header class="page-header">
+    <div>
+        <h1>Private notes</h1>
+        <p>Only you can read these notes.</p>
+    </div>
+</header>
+@if (Model.ErrorMessage is not null)
+{
+    <div class="error-message" role="alert" tabindex="-1" autofocus><p>@Model.ErrorMessage</p></div>
+}
+<div class="notes-grid">
+    <section class="reading-plane note-compose" aria-labelledby="add-note">
+        <header class="plane-heading"><h2 id="add-note">Add a note</h2></header>
+        <form method="post" class="form-stack plane-body">
+            <input asp-for="RequestId" type="hidden" />
+            <div class="field">
+                <label asp-for="Body">Note</label>
+                <textarea asp-for="Body" rows="7" maxlength="2000" required aria-describedby="note-help"></textarea>
+                <p id="note-help" class="field-help">Up to 2,000 characters. Notes stay outside the approval record.</p>
+            </div>
+            <div><button class="button" type="submit">Save note</button></div>
+        </form>
+    </section>
+    <section class="reading-plane" aria-labelledby="saved-notes">
+        <header class="plane-heading"><h2 id="saved-notes">Saved notes</h2></header>
+        @if (Model.Notes.Items.Count == 0)
+        {
+            <div class="empty-state"><p>You haven't saved any notes. Use the note field to keep useful context for later.</p></div>
+        }
+        else
+        {
+            <ul class="note-list">
+                @foreach (var note in Model.Notes.Items)
+                {
+                    <li>
+                        <p class="preserve-lines">@note.Body</p>
+                        <time datetime="@note.CreatedAt.ToString("O")">@note.CreatedAt.ToString("dd MMM yyyy, HH:mm") UTC</time>
+                    </li>
+                }
+            </ul>
+        }
+        @if (Model.Notes.NextCursor is not null)
+        {
+            <nav class="pagination" aria-label="Notes pages"><a asp-page="/Notes" asp-route-after="@Model.Notes.NextCursor">Next notes</a></nav>
+        }
+    </section>
+</div>

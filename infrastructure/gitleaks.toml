@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Generated local credentials are deliberately outside source control and the build context."
+paths = ['''(^|/)\.secrets/''', '''(^|/)\.local/''', '''(^|/)(bin|obj)/''']

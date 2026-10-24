@@ -1,14 +1,51 @@
 # Design
 
-Status: proposed. Components and behavior below describe the intended application, not observed runtime guarantees.
+The current runtime is a functioning Razor Pages monolith behind YARP. The API extraction and React topology below are planned changes, clearly separated from the current flow.
+
+## Current topology
+
+```mermaid
+flowchart TB
+    Browser[Browser] --> Gateway[YARP gateway]
+    Gateway -->|Registered public assets| Assets[Shared CSS and Source Sans 3]
+    Gateway -->|Page and API requests| Monolith[Razor Pages monolith]
+    Monolith --> Data[(PostgreSQL: monolith schema)]
+    Monolith --- Keyring[Persistent authentication keyring]
+    Adminer[Adminer: viewer_app] -. Read-only SQL .-> Data
+    Gateway -. Allowlisted request summaries .-> Logs[OpenObserve OSS]
+    Monolith -. Allowlisted request summaries .-> Logs
+```
+
+The gateway serves `/assets` from its published static assets and forwards other application routes to the monolith. The monolith implements sign-in, dashboard, notes, requisition Razor pages and the JSON endpoints. There is one feature writer, using the `monolith_app` role. `monolith.requisitions`, `monolith.requisition_audit` and `monolith.notes` hold the original records. Runtime credentials cannot change the schema; the separate `viewer_app` role can inspect records without changing them.
+
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant Gateway as YARP
+    participant Monolith as Razor Pages monolith
+    participant DB as PostgreSQL
+    Browser->>Gateway: Page or JSON mutation with cookie and antiforgery proof
+    Gateway->>Monolith: Forward request
+    Monolith->>Monolith: Validate fields, role, participant and expected version
+    Monolith->>DB: Commit allowed change and transition audit atomically
+    DB-->>Monolith: Persisted result
+    Monolith-->>Gateway: Result, redirect or safe rejection
+    Gateway-->>Browser: Same-origin response and correlation identifier
+```
+
+Razor forms use native form submission and antiforgery Tag Helpers. The draft edit form also owns its Submit button: unsaved title or reason changes are posted and rejected with retained text until saved. JSON clients obtain `/api/antiforgery` and send `X-CSRF-TOKEN` on mutations. The server derives actor identity from the authenticated principal. Creates use a stable request key; replaying that key with different original input conflicts. Edits and transitions use optimistic versions. The decision and its append-only audit entry share a transaction.
+
+`/reference/` and `/openapi/v1.json` provide authenticated inspection only in the `Local` environment. Scalar uses its packaged script, same-origin API URLs and the application cookie; external fonts, agent, proxy and telemetry are disabled. Production does not map these inspection routes.
+
+The gateway has a zero-queue concurrency limiter and bounded upstream connections. Both server applications set finite Kestrel connection limits; the monolith separately bounds admitted requests and its database pool. Invalid configured gateway or server limits fail startup. These are local resource bounds, not throughput guarantees. Private pages, API responses and inspection retain `Cache-Control: no-store`; successful registered public assets retain native static-asset caching and ETag revalidation.
 
 ## Feature boundary
 
 A requester drafts a hiring requisition with a title and reason, then submits it to a designated approver. That approver accepts or rejects the submitted request. Each requisition has a stable identifier, requester, assigned approver, status and concurrency version; state changes have an append-only audit history. Dashboard and personal notes remain Razor Pages responsibilities. Operations are bounded synchronous requests; there is no background job or document-upload flow.
 
-The original application must first work as a monolith, including requisition persistence. Extraction then moves that existing feature into an API without recreating its records. React replaces only the feature's presentation.
+The current monolith includes requisition behavior and persistence. The planned extraction moves that existing feature into an API without recreating its records. React then replaces only the feature's presentation.
 
-## Intended topology
+## Planned extracted topology
 
 ```mermaid
 flowchart TB
@@ -27,7 +64,7 @@ flowchart TB
       Requisitions[(Requisition schema)]
     end
     subgraph Inspection[Loopback management access]
-      PGAdmin[pgAdmin]
+      Adminer[Adminer]
       Logs[Searchable OSS log viewer]
     end
     Browser -->|1. Page or API request| Gateway
@@ -39,7 +76,7 @@ flowchart TB
     API --- Keys
     Legacy --> Monolith
     API --> Requisitions
-    PGAdmin -. Inspection .-> Database
+    Adminer -. Inspection .-> Database
     Gateway -. Correlated telemetry .-> Logs
     Legacy -. Correlated telemetry .-> Logs
     API -. Correlated telemetry .-> Logs
@@ -55,10 +92,10 @@ The final requisition page can be routed to React or to the Razor adapter. Both 
 | Requisition API | Authorize owners, validate requests, enforce concurrency and own feature persistence. |
 | PostgreSQL | Persist monolith and feature records using separate schemas and runtime privileges. |
 | Shared keyring | Preserve compatible authentication ticket protection across trusted server applications and ordinary restarts. |
-| pgAdmin | Inspect schemas, permissions and synthetic database records outside the business path. |
+| Adminer | Inspect schemas, permissions and synthetic database records outside the business path. |
 | Searchable log viewer | Query allowlisted events by correlation identifier without becoming a request dependency. |
 
-## User-to-result flow after extraction
+## Planned user-to-result flow after extraction
 
 1. The browser requests a page through YARP. Dashboard and notes resolve to Razor Pages; the feature route resolves to its selected page implementation.
 2. The monolith handles sign-in and issues the application authentication cookie. The API validates compatible tickets using the shared protection settings; each operation still applies its own authorization.
@@ -100,14 +137,18 @@ This is a schema-and-permission extraction within one PostgreSQL database. It is
 
 ## Security and failure behavior
 
-Both feature presentations use the same API validation, participant authorization and concurrency rules. Requesters can change their own drafts and submit them; only the assigned approver can decide a submitted requisition. A rejection requires a reason. The server rejects decisions from other users and repeated or invalid transitions. Mutating cookie-authenticated requests require antiforgery protection. Shared authentication keys make the server applications mutually trusted; keys require restricted storage and persistent handling. The React bundle receives neither keys nor database credentials.
+Currently Razor and JSON endpoints use the same in-process validation, participant authorization and concurrency rules. After extraction, both feature presentations will use the API for those rules. Requesters can change their own drafts and submit them; only the assigned approver can decide a submitted requisition. A rejection requires a reason. The server rejects decisions from other users and repeated or invalid transitions. Mutating cookie-authenticated requests require antiforgery protection. Shared authentication keys make the server applications mutually trusted; keys require restricted storage and persistent handling. The React bundle receives neither keys nor database credentials.
 
-If the API is unavailable, feature operations fail visibly without restoring the old writer. Unmigrated pages continue using their own data boundary where their dependencies remain healthy. If PostgreSQL is unavailable, the application reports a safe storage failure. A telemetry outage must not fail a business operation; buffered export and fallback output must be bounded.
+After extraction, an unavailable API must fail feature operations visibly without restoring the old writer. Dashboard and notes must remain usable when their own dependencies are healthy; a feature preview must not make the dashboard depend on API availability. This remote dependency isolation is an extraction requirement, not current monolith behavior. If PostgreSQL is unavailable, the application reports a safe storage failure. A telemetry outage must not fail a business operation; buffered export and fallback output must be bounded.
 
 UI rollback changes which page serves the feature. It does not reverse API ownership. Reverting the backend requires a separate data-and-permission transition with explicit compatibility and recovery checks. Do not re-enable stale direct writers by changing a proxy route.
 
 ## Local operating boundary
 
-The intended runtime uses Docker Compose, persistent named volumes, private service networking, loopback review and management listeners, and ignored local credentials. Ordinary stop and restart must preserve application data and the keyring. pgAdmin must connect to the actual lab database; the log viewer must contain correlated synthetic request events.
+Docker Compose runs the application, PostgreSQL, Adminer and OpenObserve with persistent named volumes and private service networking. The public gateway and management listeners bind to loopback. Browser entry points use separate `app.localhost`, `db.localhost` and `logs.localhost` hosts; ordinary stop and restart retain records and authentication keys. See the [README command reference](../README.md#operating-commands) for the implemented Make targets and credential-file names.
 
-The root Makefile will expose implemented startup, sample, checks, build, logs, restart and stop operations. Startup commands and viewer URLs are intentionally absent until they exist and can be exercised. Local service replicas do not prove a highly available deployment, and sharing a database remains an operational coupling.
+Adminer connects to the actual `strangler` database as the restricted `viewer_app` role. OpenObserve receives allowlisted summaries through an ingestion-only credential; its administrator credential is not mounted in the application containers. Export is bounded and asynchronous, and console output remains available when the viewer is unavailable.
+
+The local PostgreSQL cluster uses the built-in locale provider with `C.UTF-8`. Text collation follows Unicode code point ordering, rather than language-specific dictionary ordering. This is an operational choice for this local database, not a promise of linguistic sorting. Changing a database's locale or the container's C library requires a supported database migration; an existing data directory must not be reused across incompatible libc environments. See [PostgreSQL locale and collation documentation](https://www.postgresql.org/docs/18/collation.html).
+
+The runtime is a single local deployment. Shared PostgreSQL remains a common dependency, and local container replicas do not establish high availability or production deployment readiness.

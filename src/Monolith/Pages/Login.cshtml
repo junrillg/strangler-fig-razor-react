@@ -1,0 +1,29 @@
+@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Sign in";
+}
+<section class="signin-sheet" aria-labelledby="signin-title">
+    <header class="section-header">
+        <h1 id="signin-title">Sign in</h1>
+        <p>Open your request and review workspace.</p>
+    </header>
+    @if (Model.ErrorMessage is not null)
+    {
+        <div class="error-message" role="alert" tabindex="-1" autofocus>
+            <p>@Model.ErrorMessage</p>
+        </div>
+    }
+    <form method="post" class="form-stack">
+        <div class="field">
+            <label asp-for="Username">Username</label>
+            <input asp-for="Username" autocomplete="username" spellcheck="false" maxlength="32" required />
+        </div>
+        <div class="field">
+            <label asp-for="Password">Password</label>
+            <input asp-for="Password" type="password" autocomplete="current-password" maxlength="512" required />
+        </div>
+        <button class="button" type="submit">Sign in</button>
+    </form>
+    <p class="signin-help">Use <strong>alex</strong> to request or <strong>sam</strong> to review. Use the account password from your local setup.</p>
+</section>

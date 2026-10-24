@@ -1,0 +1,68 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Overview";
+}
+<header class="page-header">
+    <div>
+        <h1>Overview</h1>
+        <p>Requests and working notes for your account.</p>
+    </div>
+    <a class="button" asp-page="/Requisitions">@(User.IsInRole("requester") ? "Prepare a request" : "Review requests")</a>
+</header>
+<div class="overview-grid">
+    <section class="reading-plane" aria-labelledby="overview-requests">
+        <header class="plane-heading">
+            <h2 id="overview-requests">Your requisitions</h2>
+            <a asp-page="/Requisitions">View all</a>
+        </header>
+        @if (Model.Requisitions.Count == 0)
+        {
+            <div class="empty-state">
+                <h3>@(User.IsInRole("requester") ? "Start with a draft" : "No requests assigned yet")</h3>
+                <p>@(User.IsInRole("requester") ? "Give the role a title and explain why it is needed. You can edit the draft before submitting." : "Requests assigned to you will appear here. A submitted request can be approved or rejected.")</p>
+                <a asp-page="/Requisitions">@(User.IsInRole("requester") ? "Create a requisition" : "Open requisitions")</a>
+            </div>
+        }
+        else
+        {
+            <ul class="record-list">
+                @foreach (var item in Model.Requisitions)
+                {
+                    <li>
+                        <a class="record-link" asp-page="/Requisitions" asp-route-id="@item.Id">
+                            <span class="record-title">@item.Title</span>
+                            <span class="status status-@item.Status">@item.Status</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+    <section class="reading-plane" aria-labelledby="overview-notes">
+        <header class="plane-heading">
+            <h2 id="overview-notes">Private notes</h2>
+            <a asp-page="/Notes">Open notes</a>
+        </header>
+        @if (Model.Notes.Count == 0)
+        {
+            <div class="empty-state">
+                <h3>Keep your working context close</h3>
+                <p>Save a private note without adding it to a request's approval history.</p>
+                <a asp-page="/Notes">Add a note</a>
+            </div>
+        }
+        else
+        {
+            <ul class="note-list">
+                @foreach (var note in Model.Notes)
+                {
+                    <li>
+                        <p class="note-preview">@note.Body</p>
+                        <time datetime="@note.CreatedAt.ToString("O")">@note.CreatedAt.ToString("dd MMM yyyy, HH:mm") UTC</time>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+</div>

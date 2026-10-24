@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant U as Browser UI
+    participant G as YARP gateway
+    participant A as API request pipeline
+    participant H as API handler (in process)
+    participant D as PostgreSQL
+    Note over U,D: Planned API ownership boundary; each call is one synchronous operation
+    U->>G: 1 Create, submit or decision request
+    G->>A: Forward HTTP
+    A->>H: 2 Authenticated identity and valid CSRF proof
+    H->>H: Check role and payload
+    H->>D: 3 Short transaction
+    Note over H,D: Create: unique request key; submit/decision: actor, state and expected version
+    Note over H,D: Successful change and transition audit commit together
+    D-->>H: Committed result or conflict
+    H-->>A: Safe response
+    A-->>G: Status and JSON
+    G-->>U: 4 Response
+    U->>U: 5 Render persisted state or recoverable error
+    Note over U,D: Rejected identity/proof/role returns early without a successful mutation

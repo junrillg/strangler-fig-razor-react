@@ -1,0 +1,18 @@
+flowchart TB
+    B[Browser] -->|Page or API request| G[1 YARP gateway]
+    G -->|Unmigrated pages| M[2 Razor Pages<br/>Dashboard, notes, requisition API adapter]
+    G -->|Feature page| R[2 React feature page<br/>Built static assets]
+    G -->|API route| A[3 Requisition API<br/>Role, participant, state and version checks]
+    M -->|Server HTTP adapter| A
+    R -->|Browser API call through gateway| A
+    K[Shared authentication keys<br/>Persistent keyring] -.- M
+    K -.- A
+    subgraph P[4 Same PostgreSQL instance]
+        N[(Monolith schema<br/>notes and monolith runtime role)]
+        F[(Feature schema<br/>requisitions and API runtime role)]
+    end
+    M -->|Notes SQL| N
+    A -->|Atomic state and audit| F
+    V[pgAdmin] -. Inspection .-> P
+    T[Gateway, Razor and API] -. Direct allowlisted telemetry .-> L[OpenObserve]
+    Note[Planned extraction topology; implementation verification pending]

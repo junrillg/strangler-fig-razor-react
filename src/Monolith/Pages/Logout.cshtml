@@ -1,0 +1,10 @@
+@page
+@model LogoutModel
+@{
+    ViewData["Title"] = "Sign out";
+}
+<section class="signin-sheet" aria-labelledby="signout-title">
+    <header class="section-header"><h1 id="signout-title">Sign out</h1><p>End this browser's session.</p></header>
+    <form method="post"><button class="button" type="submit">Sign out</button></form>
+    <a class="text-back" asp-page="/Index">Return to overview</a>
+</section>

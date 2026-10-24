@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="src/Shared/Shared.csproj" />
+  <Project Path="src/Monolith/Monolith.csproj" />
+  <Project Path="src/Gateway/Gateway.csproj" />
+  <Project Path="tests/Backend.Tests/Backend.Tests.csproj" />
+</Solution>

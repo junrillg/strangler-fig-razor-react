@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="704" height="920" viewBox="0 0 704 920" role="img" aria-labelledby="title desc">
+<title id="title">Requisition operations · planned API boundary</title><desc id="desc">Create, submit or decide: explicit checks precede a visible result.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#17324b"/></marker></defs>
+<rect width="704" height="920" fill="white"/>
+<text x="24" y="34" font-family="Arial, sans-serif" font-size="23" font-weight="700" text-anchor="start" fill="#17324b">
+<tspan x="24" dy="0">Requisition operations · planned API boundary</tspan>
+</text>
+<text x="24" y="60" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="start" fill="#516477">
+<tspan x="24" dy="0">Create, submit or decide: explicit checks precede a visible result.</tspan>
+</text>
+<rect x="20" y="96" width="104" height="60" rx="8" fill="#f1f6f8" stroke="#c8d6df"/>
+<text x="72.0" y="121" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="72.0" dy="0">Browser UI</tspan>
+</text>
+<path d="M72,156 L72,721" fill="none" stroke="#17324b" stroke-width="1.7" stroke-dasharray="6 5"/>
+<rect x="160" y="96" width="104" height="60" rx="8" fill="#f1f6f8" stroke="#c8d6df"/>
+<text x="212.0" y="121" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="212.0" dy="0">YARP</tspan>
+<tspan x="212.0" dy="18">gateway</tspan>
+</text>
+<path d="M212,156 L212,721" fill="none" stroke="#17324b" stroke-width="1.7" stroke-dasharray="6 5"/>
+<rect x="300" y="96" width="104" height="60" rx="8" fill="#f1f6f8" stroke="#c8d6df"/>
+<text x="352.0" y="121" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="352.0" dy="0">API request</tspan>
+<tspan x="352.0" dy="18">pipeline</tspan>
+</text>
+<path d="M352,156 L352,721" fill="none" stroke="#17324b" stroke-width="1.7" stroke-dasharray="6 5"/>
+<rect x="440" y="96" width="104" height="60" rx="8" fill="#f1f6f8" stroke="#c8d6df"/>
+<text x="492.0" y="121" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="492.0" dy="0">API handler</tspan>
+<tspan x="492.0" dy="18">in process</tspan>
+</text>
+<path d="M492,156 L492,721" fill="none" stroke="#17324b" stroke-width="1.7" stroke-dasharray="6 5"/>
+<rect x="580" y="96" width="104" height="60" rx="8" fill="#f1f6f8" stroke="#c8d6df"/>
+<text x="632.0" y="121" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="632.0" dy="0">PostgreSQL</tspan>
+</text>
+<path d="M632,156 L632,721" fill="none" stroke="#17324b" stroke-width="1.7" stroke-dasharray="6 5"/>
+<path d="M72,204 L212,204" fill="none" stroke="#17324b" stroke-width="1.7" marker-end="url(#arrow)"/>
+<text x="142.0" y="195" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="142.0" dy="0">1 operation request</tspan>
+</text>
+<path d="M212,254 L352,254" fill="none" stroke="#17324b" stroke-width="1.7" marker-end="url(#arrow)"/>
+<text x="282.0" y="245" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="282.0" dy="0">forward HTTP</tspan>
+</text>
+<path d="M352,322 L492,322" fill="none" stroke="#17324b" stroke-width="1.7" marker-end="url(#arrow)"/>
+<text x="422.0" y="313" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="422.0" dy="0">2 identity + CSRF admitted</tspan>
+</text>
+<text x="492" y="355" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="492" dy="0">Check role + payload</tspan>
+<tspan x="492" dy="18">inside API handler</tspan>
+</text>
+<path d="M492,414 L632,414" fill="none" stroke="#17324b" stroke-width="1.7" marker-end="url(#arrow)"/>
+<text x="562.0" y="405" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="562.0" dy="0">3 short transaction</tspan>
+</text>
+<rect x="389" y="438" width="291" height="106" rx="8" fill="#eef7f6" stroke="#c8d6df"/>
+<text x="534.5" y="463" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="534.5" dy="0">Create: unique request key</tspan>
+<tspan x="534.5" dy="18">Submit / decide: actor + state + version</tspan>
+<tspan x="534.5" dy="18">Successful change + audit commit</tspan>
+</text>
+<path d="M632,582 L492,582" fill="none" stroke="#17324b" stroke-width="1.7" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<text x="562.0" y="573" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="562.0" dy="0">committed result / conflict</tspan>
+</text>
+<path d="M492,630 L352,630" fill="none" stroke="#17324b" stroke-width="1.7" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<text x="422.0" y="621" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="422.0" dy="0">safe response</tspan>
+</text>
+<path d="M352,674 L212,674" fill="none" stroke="#17324b" stroke-width="1.7" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<text x="282.0" y="665" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="282.0" dy="0">status + JSON</tspan>
+</text>
+<path d="M212,718 L72,718" fill="none" stroke="#17324b" stroke-width="1.7" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<text x="142.0" y="709" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="142.0" dy="0">4 response</tspan>
+</text>
+<rect x="24" y="752" width="656" height="49" rx="8" fill="#eef7f6" stroke="#c8d6df"/>
+<text x="352.0" y="777" font-family="Arial, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="352.0" dy="0">5 Active page renders persisted state or a recoverable error.</tspan>
+</text>
+<text x="24" y="831" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="start" fill="#17324b">
+<tspan x="24" dy="0">Create: POST /api/requisitions</tspan>
+<tspan x="24" dy="18">Submit / decide: POST /api/requisitions/{id}/submit or /decision</tspan>
+</text>
+<text x="24" y="888" font-family="Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#516477">
+<tspan x="24" dy="0">Rejected identity, proof, role or transition must not produce a successful state/audit change.</tspan>
+</text>
+</svg>

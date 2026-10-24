@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="704" height="1050" viewBox="0 0 704 1050" role="img" aria-labelledby="title desc">
+<title id="title">After extraction · planned</title><desc id="desc">Razor remains live; the API owns requisition behavior and persistence.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#17324b"/></marker></defs>
+<rect width="704" height="1050" fill="white"/>
+<text x="24" y="34" font-family="Arial, sans-serif" font-size="23" font-weight="700" text-anchor="start" fill="#17324b">
+<tspan x="24" dy="0">After extraction · planned</tspan>
+</text>
+<text x="24" y="60" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="start" fill="#516477">
+<tspan x="24" dy="0">Razor remains live; the API owns requisition behavior and persistence.</tspan>
+</text>
+<rect x="205" y="96" width="294" height="58" rx="8" fill="#f1f6f8" stroke="#c8d6df"/>
+<text x="352.0" y="121" font-family="Arial, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="352.0" dy="0">Browser</tspan>
+</text>
+<rect x="205" y="216" width="294" height="66" rx="8" fill="#f1f6f8" stroke="#c8d6df"/>
+<text x="352.0" y="241" font-family="Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="352.0" dy="0">1 YARP gateway</tspan>
+<tspan x="352.0" dy="19">One origin; explicit feature routes</tspan>
+</text>
+<path d="M352,154 L352,216" fill="none" stroke="#17324b" stroke-width="1.7" marker-end="url(#arrow)"/>
+<text x="365" y="190" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="start" fill="#17324b">
+<tspan x="365" dy="0">page / API request</tspan>
+</text>
+<rect x="28" y="356" width="278" height="88" rx="8" fill="#f1f6f8" stroke="#c8d6df"/>
+<text x="167.0" y="381" font-family="Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="167.0" dy="0">2 Razor Pages</tspan>
+<tspan x="167.0" dy="19">Dashboard and notes</tspan>
+<tspan x="167.0" dy="19">Retained requisition API adapter</tspan>
+</text>
+<rect x="398" y="356" width="278" height="88" rx="8" fill="#f1f6f8" stroke="#c8d6df"/>
+<text x="537.0" y="381" font-family="Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="537.0" dy="0">2 React feature page</tspan>
+<tspan x="537.0" dy="19">Requisition UI</tspan>
+<tspan x="537.0" dy="19">Built static assets</tspan>
+</text>
+<path d="M277,282 L166,356" fill="none" stroke="#17324b" stroke-width="1.7" marker-end="url(#arrow)"/>
+<text x="194" y="321" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="194" dy="0">unmigrated pages</tspan>
+</text>
+<path d="M427,282 L537,356" fill="none" stroke="#17324b" stroke-width="1.7" marker-end="url(#arrow)"/>
+<text x="528" y="321" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="528" dy="0">feature page</tspan>
+</text>
+<rect x="350" y="540" width="306" height="88" rx="8" fill="#f1f6f8" stroke="#c8d6df"/>
+<text x="503.0" y="565" font-family="Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="503.0" dy="0">3 Requisition API</tspan>
+<tspan x="503.0" dy="19">Role and participant checks</tspan>
+<tspan x="503.0" dy="19">State / version / atomic audit</tspan>
+</text>
+<path d="M251,444 L350,566" fill="none" stroke="#17324b" stroke-width="1.7" marker-end="url(#arrow)"/>
+<text x="281" y="490" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="281" dy="0">Razor adapter</tspan>
+<tspan x="281" dy="18">HTTP call</tspan>
+</text>
+<path d="M537,444 L537,540" fill="none" stroke="#17324b" stroke-width="1.7" marker-end="url(#arrow)"/>
+<text x="550" y="481" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="start" fill="#17324b">
+<tspan x="550" dy="0">Browser API call</tspan>
+<tspan x="550" dy="18">through gateway</tspan>
+</text>
+<path d="M499,249 L693,249 L693,584 L656,584" fill="none" stroke="#17324b" stroke-width="1.7" marker-end="url(#arrow)"/>
+<text x="676" y="521" font-family="Arial, sans-serif" font-size="13" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="676" dy="0">/api</tspan>
+</text>
+<rect x="28" y="540" width="232" height="88" rx="8" fill="#f1f6f8" stroke="#c8d6df"/>
+<text x="144.0" y="565" font-family="Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="144.0" dy="0">Shared authentication keys</tspan>
+<tspan x="144.0" dy="19">Persistent keyring</tspan>
+<tspan x="144.0" dy="19">Trusted server applications</tspan>
+</text>
+<path d="M164,444 L164,540" fill="none" stroke="#17324b" stroke-width="1.7" stroke-dasharray="6 5"/>
+<path d="M260,584 L350,584" fill="none" stroke="#17324b" stroke-width="1.7" stroke-dasharray="6 5"/>
+<rect x="24" y="743" width="656" height="147" rx="8" fill="#f7fafb" stroke="#c8d6df"/>
+<text x="352.0" y="768" font-family="Arial, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="352.0" dy="0">4 Same PostgreSQL instance</tspan>
+</text>
+<rect x="44" y="790" width="272" height="76" rx="8" fill="#f1f6f8" stroke="#c8d6df"/>
+<text x="180.0" y="815" font-family="Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="180.0" dy="0">Monolith schema</tspan>
+<tspan x="180.0" dy="19">Notes · monolith runtime role</tspan>
+</text>
+<rect x="384" y="790" width="272" height="76" rx="8" fill="#f1f6f8" stroke="#c8d6df"/>
+<text x="520.0" y="815" font-family="Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="520.0" dy="0">Feature schema</tspan>
+<tspan x="520.0" dy="19">Requisitions · API runtime role</tspan>
+</text>
+<path d="M28,398 L12,398 L12,828 L44,828" fill="none" stroke="#17324b" stroke-width="1.7" marker-end="url(#arrow)"/>
+
+<path d="M503,628 L503,790" fill="none" stroke="#17324b" stroke-width="1.7" marker-end="url(#arrow)"/>
+<text x="488" y="709" font-family="Arial, sans-serif" font-size="14" font-weight="400" text-anchor="end" fill="#17324b">
+<tspan x="488" dy="0">authorized SQL</tspan>
+<tspan x="488" dy="18">state + audit commit</tspan>
+</text>
+<rect x="523" y="657" width="157" height="64" rx="8" fill="#f1f6f8" stroke="#c8d6df"/>
+<text x="601.5" y="682" font-family="Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="601.5" dy="0">pgAdmin</tspan>
+<tspan x="601.5" dy="19">Inspection</tspan>
+</text>
+<path d="M602,721 L602,743" fill="none" stroke="#17324b" stroke-width="1.7" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<rect x="28" y="934" width="260" height="65" rx="8" fill="#f1f6f8" stroke="#c8d6df"/>
+<text x="158.0" y="959" font-family="Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="158.0" dy="0">Gateway · Razor · API</tspan>
+<tspan x="158.0" dy="19">Allowlisted direct telemetry</tspan>
+</text>
+<rect x="400" y="934" width="280" height="65" rx="8" fill="#f1f6f8" stroke="#c8d6df"/>
+<text x="540.0" y="959" font-family="Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle" fill="#17324b">
+<tspan x="540.0" dy="0">OpenObserve</tspan>
+<tspan x="540.0" dy="19">Searchable operational logs</tspan>
+</text>
+<path d="M288,966 L400,966" fill="none" stroke="#17324b" stroke-width="1.7" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<text x="24" y="1030" font-family="Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#516477">
+<tspan x="24" dy="0">Dashed associations are key wiring, telemetry or inspection; they are not business calls.</tspan>
+</text>
+</svg>

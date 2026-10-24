@@ -1,6 +1,6 @@
 # ADR 0001: Extract requisition ownership before switching its page
 
-Status: accepted design; implementation pending.
+Status: accepted. The original monolith is implemented; API extraction and React routing remain planned.
 
 ## Context
 
@@ -30,7 +30,7 @@ Use compatible server authentication cookies and a persistent shared data-protec
 
 Both page implementations depend on the extracted API. The database remains shared infrastructure, while schema privileges enforce the application boundary. The ownership transition may require brief feature-write quiescence; uninterrupted writes and automatic backend rollback are not claimed. Shared authentication keys create a deliberate trust relationship between server applications.
 
-## Verification required
+## Extraction verification required
 
 Preserve records created by the original monolith; verify them through the extracted API and both pages. Deny direct feature writes by the former runtime role. Exercise UI switching after new API writes, stale edits, cross-owner access, malformed requests, antiforgery rejection, API outage and ordinary restart. Interrupt the ownership transition in isolated state and verify the documented recovery path before claiming cutover safety.
 
