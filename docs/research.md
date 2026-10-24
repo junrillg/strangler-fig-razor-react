@@ -1,0 +1,22 @@
+# Technical research
+
+Sources checked on 24 October 2026. These sources support the proposed design; they do not establish that its implementation works.
+
+| Source | Documented behavior | Decision |
+| --- | --- | --- |
+| [Microsoft: Strangler Fig pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/strangler-fig) | A facade directs requests between existing and replacement functionality; cross-system dependencies need an explicit adapter. | Extract work items while dashboard and notes remain in Razor Pages. |
+| [.NET 10 downloads](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) | The release page lists SDK 10.0.402 and ASP.NET Core runtime 10.0.13. | Use the supported .NET 10 release line for the monolith, gateway and API. |
+| [YARP 2.3.0 package](https://www.nuget.org/packages/Yarp.ReverseProxy/2.3.0) and [configuration](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/config-files?view=aspnetcore-10.0) | YARP defines routes and destination clusters through ASP.NET Core configuration; file configuration supports reload. | Use one public origin with explicit feature routes and a monolith fallback. Configuration reload alone is not a verified cutover protocol. |
+| [ASP.NET Core: cookie sharing](https://learn.microsoft.com/en-us/aspnet/core/security/cookie-sharing?view=aspnetcore-10.0) | Sharing cookie tickets requires compatible authentication schemes, application name, cookie settings and data-protection keys. | Keep the server-issued authentication cookie usable by the monolith and API. Sharing keys establishes a trust boundary, not an authorization rule. |
+| [ASP.NET Core: antiforgery](https://learn.microsoft.com/en-us/aspnet/core/security/anti-request-forgery?view=aspnetcore-10.0) | Automatically attached cookies make state-changing requests vulnerable to CSRF. HTTPS does not remove that risk. | Validate antiforgery tokens for authenticated mutations from both page implementations. |
+| [PostgreSQL 18: schemas](https://www.postgresql.org/docs/18/ddl-schemas.html), [ALTER TABLE](https://www.postgresql.org/docs/18/sql-altertable.html), [REVOKE](https://www.postgresql.org/docs/18/sql-revoke.html) and [locking](https://www.postgresql.org/docs/18/explicit-locking.html) | Schemas share a database and are separated by privileges. Table schema changes and access revocation are supported; conflicting operations may block on locks. | Preserve existing work-item records using a controlled schema-and-permission transition, with distinct runtime roles and a bounded write drain. Do not describe this as a separate-database migration. |
+| [React: add to an existing project](https://react.dev/learn/add-react-to-an-existing-project) | React can be introduced into an existing application, including a dedicated subroute. | Keep full-page navigation between Razor and the React feature; avoid replacing the whole site shell. |
+| [Vite: production build](https://vite.dev/guide/build) | Vite produces static assets and supports a nested public base path. | Build feature assets for their actual route and serve the compiled output, rather than relying on a development server. |
+| [pgAdmin: container deployment](https://www.pgadmin.org/docs/pgadmin4/latest/container_deployment.html) | The maintained container supports configured access and database connections. | Include pgAdmin for inspecting the actual schemas, privileges and synthetic records. |
+| [OpenObserve: self-hosted setup](https://openobserve.ai/docs/getting-started/) and [OSS source](https://github.com/openobserve/openobserve) | A self-hosted deployment provides searchable telemetry; its simple installation has single-node limits. | Proposed searchable log viewer: self-hosted OpenObserve OSS, separate from business dependencies. Exact image, license, ingestion and access settings remain to be pinned and verified. |
+
+## Alternatives
+
+A full rewrite would obscure coexistence. React embedded in every Razor page would make the migration boundary less visible. Separate origins would add cross-origin configuration without helping this feature. Dual writes to old and new databases would create a reconciliation problem the application does not need.
+
+This design keeps one PostgreSQL database and moves logical ownership through schema and privilege changes. It leaves physical database separation outside this extraction. No queue, object storage, AI integration or cloud service is needed for bounded synchronous work-item operations.
